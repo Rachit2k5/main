@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Smart Civic Issue Reporting</title>
+
 <!-- Google Fonts & Material Icons -->
 <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -41,6 +42,7 @@ body {
   display: flex;
   align-items: center;
   gap: 30px;
+  min-height: 100px;
 }
 .header-hero .material-icons {
   font-size: 52px;
@@ -48,6 +50,8 @@ body {
   border-radius: 50%;
   padding: 10px;
   margin-right: 10px;
+  box-shadow: 0 6px 14px #1976d235;
+  transition: background .28s, box-shadow 0.28s;
 }
 .header-hero-content {
   display: flex;
@@ -59,14 +63,15 @@ body {
   letter-spacing: .01em;
   margin: 0;
   font-weight: 700;
+  text-shadow: 0 3px 16px #0002;
 }
-
 .header-hero h2 {
   font-size: 1.13rem;
   font-weight: 400;
   margin: 7px 0 0 0;
+  opacity: 0.97;
+  letter-spacing: 0.015em;
 }
-
 #googleAuthBar {
   display: flex; 
   align-items: center; 
@@ -76,8 +81,8 @@ body {
   gap: 12px;
 }
 #userBar { display:none; align-items: center; }
-#userAvatar { border-radius:50%; width: 46px; height: 46px; border:3px solid var(--primary);}
-#userName { font-weight:600; margin-right:12px; font-size: 1.03rem;}
+#userAvatar { border-radius:50%; width: 46px; height: 46px; border:3px solid var(--primary); box-shadow:0 1px 8px #2223; margin-right:8px;}
+#userName { font-weight:600; margin-right:12px; font-size: 1.06rem;}
 #logoutBtn, #loginBtn {
   background: var(--primary);
   color: #fff;
@@ -89,10 +94,10 @@ body {
   font-size: 1rem;
   margin-left: 10px;
   cursor: pointer;
-  transition: background 0.19s;
+  transition: background 0.19s, box-shadow 0.19s, color 0.17s;
 }
 #logoutBtn { background: #bbb; color:#233; }
-#loginBtn:hover, #logoutBtn:hover { background: var(--primary-dark); color:#fff; }
+#loginBtn:hover, #logoutBtn:hover { background: var(--primary-dark); color:#fff; box-shadow: 0 3px 18px #1976d233; }
 
 form {
   background: var(--card-bg);
@@ -122,16 +127,17 @@ select,
 textarea {
   margin-top: 8px;
   padding: 13px 16px;
-  font-size: 0.97rem;
+  font-size: 0.99rem;
   border-radius: 10px;
   border: 2px solid #dfe3ee;
   background: var(--light-bg);
   width: 100%;
-  transition: border-color .24s;
+  transition: border-color .24s, box-shadow 0.19s;
   margin-bottom: 1px;
   outline: none;
+  box-shadow:0 1px 3px #b2bec370;
 }
-input:focus, select:focus, textarea:focus { border-color: var(--accent); background:#fff; }
+input:focus, select:focus, textarea:focus { border-color: var(--accent); background:#fff; box-shadow: 0 2px 9px #29b6f644; }
 textarea { min-height: 85px; resize: vertical; }
 button[type="submit"] {
   background: linear-gradient(97deg,var(--accent) 70%,var(--primary));
@@ -148,7 +154,7 @@ button[type="submit"] {
   cursor: pointer;
   transition: background 0.18s, box-shadow 0.28s;
 }
-button[type="submit"]:hover { background: var(--primary-dark); }
+button[type="submit"]:hover { background: var(--primary-dark); box-shadow:0 8px 35px #1976d24c; color:#fff;}
 button, #refreshBtn {
   font-weight: 700;
   box-shadow: 0 5px 18px rgba(33,150,243,0.09);
@@ -165,6 +171,7 @@ hr { border: none; border-top: 2px solid #e4e9ec; opacity:0.70; margin: 24px 0; 
   color: #fff;
   border: none;
   box-shadow: 0 5px 16px #fbc02d33,0 0 7px #fff3, 0 2px 9px #0097a722;
+  transition: background 0.19s, box-shadow 0.18s;
 }
 #refreshBtn:hover { background: linear-gradient(99deg, #efb200 30%, #1976d2 99%);}
 .issues-list {
@@ -174,7 +181,7 @@ hr { border: none; border-top: 2px solid #e4e9ec; opacity:0.70; margin: 24px 0; 
   margin: 4em auto 50px auto;
   padding: 30px 34px;
   box-shadow: var(--shadow);
-  font-size: 1.09rem;
+  font-size: 1.10rem;
   border: 2.2px solid var(--primary);
 }
 .issues-list .card {
@@ -187,7 +194,9 @@ hr { border: none; border-top: 2px solid #e4e9ec; opacity:0.70; margin: 24px 0; 
   padding-right: 9px;
   background: #f7fafd;
   position: relative;
+  transition: box-shadow .23s;
 }
+.issues-list .card:hover { box-shadow:0 8px 38px #1976d210; background:#e3eaf3;}
 .issues-list .card:last-child { border-bottom: none; margin-bottom: 0;}
 .issues-list .category { color: var(--primary); font-weight: 700; letter-spacing:0.04em; font-size:1.11rem;}
 .issues-list .status-tag {
@@ -200,6 +209,7 @@ hr { border: none; border-top: 2px solid #e4e9ec; opacity:0.70; margin: 24px 0; 
   background: #eee; color: #555;
   text-transform: capitalize;
   vertical-align: middle;
+  box-shadow:0 2px 8px #2221;
 }
 .issues-list .status-tag.reported { background: var(--status-reported);  color: #fff;}
 .issues-list .status-tag.acknowledged {background: var(--status-acknowledged); color: #fff;}
@@ -214,7 +224,9 @@ hr { border: none; border-top: 2px solid #e4e9ec; opacity:0.70; margin: 24px 0; 
   border-radius: var(--radius);
   box-shadow: 0 8px 20px #1976d241;
   display: block;
+  transition: box-shadow .22s, transform .22s;
 }
+.issues-list img.issue-photo:hover { box-shadow: 0 12px 29px #29b6f668; transform: scale(1.04);}
 .issues-list .user-info {
   display: flex;
   align-items: center;
@@ -224,9 +236,11 @@ hr { border: none; border-top: 2px solid #e4e9ec; opacity:0.70; margin: 24px 0; 
 }
 .issues-list .user-info img {
   width: 35px; height:35px; border-radius:50%; border:2px solid var(--primary-dark);
+  box-shadow:0 1px 7px #16385d33;
 }
 .issues-list .user-info .userName {
   font-size: 0.97rem; font-weight:600; color: #1d3557;
+  padding-top:2px;
 }
 /* Responsive Design */
 @media (max-width: 900px) {
@@ -321,10 +335,9 @@ hr { border: none; border-top: 2px solid #e4e9ec; opacity:0.70; margin: 24px 0; 
 <button id="refreshBtn"><span class="material-icons" style="vertical-align:middle;margin-right:9px;">refresh</span>Refresh List</button>
 <div class="issues-list" id="issuesList"></div>
 
-<!-- Google Login Script -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
-/* ===== Google Login Logic ===== */
+// ===== Google Login Logic =====
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const userBar = document.getElementById('userBar');
@@ -360,10 +373,179 @@ logoutBtn.onclick = () => {
 };
 tryRestoreGoogleUser();
 
-/* === Your Existing JS for camera, media, location, etc. comes below === */
-// ... rest of your unchanged JS, including form.onsubmit and issues list ...
+// ========== GEOLOCATION & FORM JS ==========
+// Find geolocation
+const form = document.getElementById('issueForm');
+const issuesList = document.getElementById('issuesList');
+const latitudeInput = form.elements['latitude'];
+const longitudeInput = form.elements['longitude'];
+document.getElementById('locateBtn').onclick = () => {
+  if (!navigator.geolocation) {
+    alert('Geolocation not supported by your browser.');
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(position => {
+    latitudeInput.value = position.coords.latitude.toFixed(6);
+    longitudeInput.value = position.coords.longitude.toFixed(6);
+  }, () => alert('Unable to retrieve your location.'));
+};
 
-// Update your loadIssues() to render cards with user avatars and richer tags:
+// Photo and Video Recording logic...
+let cameraStream = null, capturedPhotoBlob = null;
+const photoVideo = document.getElementById('photoVideo');
+const startCameraBtn = document.getElementById('startCameraBtn');
+const capturePhotoBtn = document.getElementById('capturePhotoBtn');
+const canvas = document.getElementById('canvas');
+startCameraBtn.onclick = async () => {
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }});
+    photoVideo.srcObject = cameraStream;
+    photoVideo.style.display = 'block';
+    capturePhotoBtn.style.display = 'inline-block';
+    startCameraBtn.style.display = 'none';
+  } catch(e) {
+    alert('Could not access camera.');
+  }
+};
+capturePhotoBtn.onclick = () => {
+  canvas.width = photoVideo.videoWidth;
+  canvas.height = photoVideo.videoHeight;
+  canvas.getContext('2d').drawImage(photoVideo, 0, 0);
+  canvas.toBlob(blob => {
+    capturedPhotoBlob = blob;
+    alert('Photo captured! You can now submit the form.');
+  }, "image/jpeg");
+  photoVideo.style.display = 'none';
+  capturePhotoBtn.style.display = 'none';
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+  }
+  startCameraBtn.style.display = 'inline-block';
+};
+
+// Video recording
+let videoStream = null, mediaRecorderVideo = null, recordedVideoChunks = [], recordedVideoBlob = null;
+const startVideoBtn = document.getElementById('startVideoBtn');
+const stopVideoBtn = document.getElementById('stopVideoBtn');
+const videoRecording = document.getElementById('videoRecording');
+startVideoBtn.onclick = async () => {
+  try {
+    videoStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    mediaRecorderVideo = new MediaRecorder(videoStream);
+    recordedVideoChunks = [];
+    mediaRecorderVideo.ondataavailable = e => {
+      if (e.data.size > 0) recordedVideoChunks.push(e.data);
+    };
+    mediaRecorderVideo.onstop = () => {
+      recordedVideoBlob = new Blob(recordedVideoChunks, { type: 'video/webm' });
+      videoRecording.src = URL.createObjectURL(recordedVideoBlob);
+      videoRecording.style.display = 'block';
+      if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+        videoStream = null;
+      }
+    };
+    mediaRecorderVideo.start();
+    startVideoBtn.disabled = true;
+    stopVideoBtn.disabled = false;
+  } catch(e) {
+    alert('Could not start video recording.');
+  }
+};
+stopVideoBtn.onclick = () => {
+  if (mediaRecorderVideo && mediaRecorderVideo.state === 'recording') {
+    mediaRecorderVideo.stop();
+    startVideoBtn.disabled = false;
+    stopVideoBtn.disabled = true;
+  }
+};
+
+// Voice recording
+const startVoiceBtn = document.getElementById('startVoiceBtn');
+const stopVoiceBtn = document.getElementById('stopVoiceBtn');
+const audioPlayback = document.getElementById('audioPlayback');
+let mediaRecorderAudio, audioChunks = [], recordedAudioBlob = null;
+startVoiceBtn.onclick = async () => {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert('Audio recording not supported in your browser.');
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorderAudio = new MediaRecorder(stream);
+    audioChunks = [];
+    mediaRecorderAudio.ondataavailable = e => audioChunks.push(e.data);
+    mediaRecorderAudio.onstop = () => {
+      recordedAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      audioPlayback.src = URL.createObjectURL(recordedAudioBlob);
+      audioPlayback.style.display = 'block';
+    };
+    mediaRecorderAudio.start();
+    startVoiceBtn.disabled = true;
+    stopVoiceBtn.disabled = false;
+  } catch(e) {
+    alert('Could not start audio recording.');
+  }
+};
+stopVoiceBtn.onclick = () => {
+  if (mediaRecorderAudio && mediaRecorderAudio.state === 'recording') {
+    mediaRecorderAudio.stop();
+    startVoiceBtn.disabled = false;
+    stopVoiceBtn.disabled = true;
+  }
+};
+
+// FORM SUBMIT -- includes Google user info if present!
+form.onsubmit = async (e) => {
+  e.preventDefault();
+  const formData = new FormData();
+  formData.append('category', form.elements['category'].value);
+  formData.append('description', form.elements['description'].value);
+  formData.append('latitude', form.elements['latitude'].value);
+  formData.append('longitude', form.elements['longitude'].value);
+  if (capturedPhotoBlob) {
+    formData.append('photo', capturedPhotoBlob, 'captured_photo.jpg');
+  } else if (form.elements['photo'].files.length > 0) {
+    formData.append('photo', form.elements['photo'].files[0]);
+  }
+  if (recordedAudioBlob) {
+    formData.append('audio', recordedAudioBlob, 'recording.webm');
+  }
+  if (recordedVideoBlob) {
+    formData.append('video', recordedVideoBlob, 'recorded_video.webm');
+  } else if (form.elements['videoFile'].files.length > 0) {
+    formData.append('video', form.elements['videoFile'].files[0]);
+  }
+  // Attach Google user info if logged in
+  if (googleUser) {
+    formData.append('user_name', googleUser.name || '');
+    formData.append('user_email', googleUser.email || '');
+    formData.append('user_avatar', googleUser.picture || '');
+  }
+  try {
+    const res = await fetch('/issues', {
+      method: 'POST',
+      body: formData,
+    });
+    if (!res.ok) {
+      alert('Failed to report issue.');
+      return;
+    }
+    alert('Issue reported successfully!');
+    form.reset();
+    capturedPhotoBlob = null;
+    recordedAudioBlob = null;
+    recordedVideoBlob = null;
+    audioPlayback.style.display = 'none';
+    videoRecording.style.display = 'none';
+    loadIssues();
+  } catch {
+    alert('Error submitting form.');
+  }
+};
+
+// ISSUE LIST RENDERING
 async function loadIssues() {
   const res = await fetch('/issues');
   const issues = await res.json();
@@ -383,8 +565,11 @@ async function loadIssues() {
       <div class="meta"><i class="material-icons" style="font-size:16px;vertical-align:middle;">place</i>
         <span style="color:#1b3d6b"><b>${Number(issue.latitude).toFixed(6)}, ${Number(issue.longitude).toFixed(6)}</b></span>
       </div>
-      ${issue.user_avatar ? `
-        <div class="user-info"><img src="${issue.user_avatar}" alt="user"/><span class="userName">${issue.user_name || issue.user_email || "User"}</span></div>
+      ${(issue.user_avatar || issue.user_name || issue.user_email) ? `
+        <div class="user-info">
+          ${issue.user_avatar ? `<img src="${issue.user_avatar}" alt="user"/>` : ''}
+          <span class="userName">${issue.user_name || issue.user_email || "Anon User"}</span>
+        </div>
       ` : ''}
       ${issue.photo_url ? `<img class="issue-photo" src="${issue.photo_url}" alt="Photo" />` : ''}
       ${issue.audio_url ? `<audio controls src="${issue.audio_url}"></audio>` : ''}

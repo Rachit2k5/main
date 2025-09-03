@@ -11,6 +11,7 @@ from pydantic import BaseModel, validator
 from enum import Enum
 from typing import Optional, List
 from datetime import datetime
+from collections import defaultdict
 
 app = FastAPI(title="Smart Civic Issue Reporting System")
 
@@ -20,11 +21,9 @@ app.add_middleware(
     allow_methods=["*"], allow_headers=["*"]
 )
 
-# Ensure /tmp exists for uploads
 UPLOAD_DIR = "/tmp"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# Mount static files only if the directory exists
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "../static")
 if os.path.isdir(STATIC_DIR):
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -57,6 +56,10 @@ class Issue(BaseModel):
     status: IssueStatus = IssueStatus.reported
     created_at: datetime
     updated_at: datetime
+    # User fields for Google login
+    user_name: Optional[str] = None
+    user_email: Optional[str] = None
+    user_avatar: Optional[str] = None
 
     @validator("latitude")
     def latitude_valid(cls, v):
@@ -70,10 +73,8 @@ class Issue(BaseModel):
             raise ValueError("Longitude must be between -180 and 180")
         return v
 
-# ========== IN-MEMORY "DATABASE" ==========
 issues_db = {}
 
-# ========== AI ANALYSIS ==========
 def analyze_photo_ai(file_path: str) -> str:
     # Placeholder for a real AI model—replace with your own or a cloud API call.
     return "AI: Detected potential infrastructure issue—please verify."
@@ -88,9 +89,12 @@ async def report_issue(
     longitude: float = Form(...),
     photo: Optional[UploadFile] = File(None),
     audio: Optional[UploadFile] = File(None),
-    video: Optional[UploadFile] = File(None)
+    video: Optional[UploadFile] = File(None),
+    # New user info fields
+    user_name: Optional[str] = Form(None),
+    user_email: Optional[str] = Form(None),
+    user_avatar: Optional[str] = Form(None),
 ):
-    # Validate coordinates
     if not (-90 <= latitude <= 90):
         raise HTTPException(status_code=400, detail="Latitude must be between -90 and 90")
     if not (-180 <= longitude <= 180):
@@ -144,9 +148,11 @@ async def report_issue(
         ai_analysis=ai_analysis,
         status=IssueStatus.reported,
         created_at=now,
-        updated_at=now
+        updated_at=now,
+        user_name=user_name,
+        user_email=user_email,
+        user_avatar=user_avatar
     )
-
     issues_db[issue_id] = issue_obj
     return issue_obj
 
@@ -176,11 +182,11 @@ async def update_status(issue_id: str, status_update: IssueStatus):
 async def analytics_summary():
     total_issues = len(issues_db)
     by_category = {}
-    by_status = {}
+    by_status = defaultdict(int)
     response_times = []
     for issue in issues_db.values():
         by_category[issue.category] = by_category.get(issue.category, 0) + 1
-        by_status[issue.status] = by_status.get(issue.status, 0) + 1
+        by_status[issue.status] += 1
         if issue.status == IssueStatus.resolved:
             delta = (issue.updated_at - issue.created_at).total_seconds()
             if delta > 0:
@@ -214,7 +220,6 @@ async def google_login():
 async def google_callback(request: Request, code: str = None):
     if not code:
         raise HTTPException(status_code=400, detail="No code provided")
-    # Exchange code for tokens
     token_resp = requests.post(
         "https://oauth2.googleapis.com/token",
         data = {
@@ -228,7 +233,6 @@ async def google_callback(request: Request, code: str = None):
     if token_resp.status_code != 200:
         raise HTTPException(status_code=400, detail="Token exchange failed")
     access_token = token_resp.json().get("access_token")
-    # Get user info
     userinfo_resp = requests.get(
         "https://www.googleapis.com/oauth2/v2/userinfo",
         headers={"Authorization": f"Bearer {access_token}"}
