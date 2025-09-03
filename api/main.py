@@ -7,11 +7,7 @@ from pydantic import BaseModel, validator
 from enum import Enum
 from typing import Optional, List
 from datetime import datetime
-from sqlalchemy import create_engine, Column, String, Float, DateTime, Enum as SqlEnum
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 
-# ========== SETUP ==========
 app = FastAPI(title="Smart Civic Issue Reporting System")
 
 app.add_middleware(
@@ -19,11 +15,6 @@ app.add_middleware(
     allow_origins=["*"], allow_credentials=True,
     allow_methods=["*"], allow_headers=["*"]
 )
-
-DATABASE_URL = "sqlite:///./civic_issues.db"
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
 
 UPLOAD_DIR = "/tmp"  # Use /tmp for all file ops on Vercel/serverless
 
@@ -41,23 +32,6 @@ class IssueStatus(str, Enum):
     acknowledged = "acknowledged"
     in_progress = "in_progress"
     resolved = "resolved"
-
-class IssueDB(Base):
-    __tablename__ = "issues"
-    id = Column(String, primary_key=True)
-    category = Column(SqlEnum(IssueCategory), nullable=False)
-    description = Column(String, nullable=False)
-    latitude = Column(Float)
-    longitude = Column(Float)
-    photo_filename = Column(String, nullable=True)
-    audio_filename = Column(String, nullable=True)
-    video_filename = Column(String, nullable=True)
-    ai_analysis = Column(String, nullable=True)
-    status = Column(SqlEnum(IssueStatus), default=IssueStatus.reported)
-    created_at = Column(DateTime, nullable=False)
-    updated_at = Column(DateTime, nullable=False)
-
-Base.metadata.create_all(bind=engine)
 
 class Issue(BaseModel):
     id: str
@@ -85,11 +59,12 @@ class Issue(BaseModel):
             raise ValueError("Longitude must be between -180 and 180")
         return v
 
+# ========== IN-MEMORY "DATABASE" ==========
+issues_db = {}
+
 # ========== AI ANALYSIS ==========
 def analyze_photo_ai(file_path: str) -> str:
     # Placeholder for a real AI model—replace with your own or a cloud API call.
-    # For demo: returns a random analysis string.
-    # EXAMPLE: return my_ai_predict_function(file_path)
     return "AI: Detected potential infrastructure issue—please verify."
 
 # ========== ROUTES ==========
@@ -110,7 +85,6 @@ async def report_issue(
     if not (-180 <= longitude <= 180):
         raise HTTPException(status_code=400, detail="Longitude must be between -180 and 180")
 
-    db = Session()
     issue_id = str(uuid.uuid4())
     now = datetime.utcnow()
     photo_filename = audio_filename = video_filename = ai_analysis = None
@@ -140,7 +114,7 @@ async def report_issue(
         with open(video_path, "wb") as f:
             f.write(await video.read())
 
-    issue_obj = IssueDB(
+    issue_obj = Issue(
         id=issue_id,
         category=category,
         description=description,
@@ -154,55 +128,46 @@ async def report_issue(
         created_at=now,
         updated_at=now
     )
-    db.add(issue_obj)
-    db.commit()
-    db.refresh(issue_obj)
-    db.close()
 
-    return Issue(**issue_obj.__dict__)
+    issues_db[issue_id] = issue_obj
+    return issue_obj
 
 @app.get("/issues", response_model=List[Issue])
 async def list_issues(
     status: Optional[IssueStatus] = Query(None),
     category: Optional[IssueCategory] = Query(None)
 ):
-    db = Session()
-    query = db.query(IssueDB)
+    results = list(issues_db.values())
     if status:
-        query = query.filter(IssueDB.status == status)
+        results = [i for i in results if i.status == status]
     if category:
-        query = query.filter(IssueDB.category == category)
-    issues = query.all()
-    db.close()
-    return [Issue(**i.__dict__) for i in issues]
+        results = [i for i in results if i.category == category]
+    return results
 
 @app.patch("/issues/{issue_id}/status", response_model=Issue)
 async def update_status(issue_id: str, status_update: IssueStatus):
-    db = Session()
-    issue = db.query(IssueDB).filter(IssueDB.id == issue_id).first()
+    issue = issues_db.get(issue_id)
     if not issue:
-        db.close()
         raise HTTPException(status_code=404, detail="Issue not found")
     issue.status = status_update
     issue.updated_at = datetime.utcnow()
-    db.commit()
-    db.refresh(issue)
-    db.close()
-    return Issue(**issue.__dict__)
+    issues_db[issue_id] = issue
+    return issue
 
 @app.get("/analytics/summary")
 async def analytics_summary():
-    db = Session()
-    total_issues = db.query(IssueDB).count()
-    by_category = {cat.value: db.query(IssueDB).filter(IssueDB.category == cat).count() for cat in IssueCategory}
-    by_status = {status.value: db.query(IssueDB).filter(IssueDB.status == status).count() for status in IssueStatus}
-    resolved_issues = db.query(IssueDB).filter(IssueDB.status == IssueStatus.resolved).all()
-    response_times = [
-        (i.updated_at - i.created_at).total_seconds()
-        for i in resolved_issues if (i.updated_at - i.created_at).total_seconds() > 0
-    ]
+    total_issues = len(issues_db)
+    by_category = {}
+    by_status = {}
+    response_times = []
+    for issue in issues_db.values():
+        by_category[issue.category] = by_category.get(issue.category, 0) + 1
+        by_status[issue.status] = by_status.get(issue.status, 0) + 1
+        if issue.status == IssueStatus.resolved:
+            delta = (issue.updated_at - issue.created_at).total_seconds()
+            if delta > 0:
+                response_times.append(delta)
     avg_response_time = sum(response_times) / len(response_times) if response_times else None
-    db.close()
     return {
         "total_issues": total_issues,
         "issues_by_category": by_category,
@@ -213,4 +178,3 @@ async def analytics_summary():
 @app.get("/")
 async def root():
     return JSONResponse({"msg": "Smart Civic Issue Reporting API running."})
-
