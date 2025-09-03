@@ -1,6 +1,9 @@
+from dotenv import load_dotenv
+import requests
+load_dotenv()
 import os
 import uuid
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Query
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Query, Request
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -189,6 +192,50 @@ async def analytics_summary():
         "issues_by_status": by_status,
         "average_resolution_time_seconds": avg_response_time,
     }
+
+GOOGLE_CLIENT_ID = os.environ["GOOGLE_CLIENT_ID"]
+GOOGLE_CLIENT_SECRET = os.environ["GOOGLE_CLIENT_SECRET"]
+GOOGLE_REDIRECT_URI = os.environ["GOOGLE_REDIRECT_URI"]
+
+@app.get("/auth/google/login")
+async def google_login():
+    url = (
+        "https://accounts.google.com/o/oauth2/v2/auth"
+        "?response_type=code"
+        f"&client_id={GOOGLE_CLIENT_ID}"
+        f"&redirect_uri={GOOGLE_REDIRECT_URI}"
+        "&scope=openid%20email%20profile"
+        "&access_type=offline"
+        "&prompt=select_account"
+    )
+    return {"auth_url": url}
+
+@app.get("/auth/google/callback")
+async def google_callback(request: Request, code: str = None):
+    if not code:
+        raise HTTPException(status_code=400, detail="No code provided")
+    # Exchange code for tokens
+    token_resp = requests.post(
+        "https://oauth2.googleapis.com/token",
+        data = {
+            "code": code,
+            "client_id": GOOGLE_CLIENT_ID,
+            "client_secret": GOOGLE_CLIENT_SECRET,
+            "redirect_uri": GOOGLE_REDIRECT_URI,
+            "grant_type": "authorization_code"
+        }
+    )
+    if token_resp.status_code != 200:
+        raise HTTPException(status_code=400, detail="Token exchange failed")
+    access_token = token_resp.json().get("access_token")
+    # Get user info
+    userinfo_resp = requests.get(
+        "https://www.googleapis.com/oauth2/v2/userinfo",
+        headers={"Authorization": f"Bearer {access_token}"}
+    )
+    if userinfo_resp.status_code != 200:
+        raise HTTPException(status_code=400, detail="User info fetch failed")
+    return userinfo_resp.json()
 
 @app.get("/")
 async def serve_frontend():

@@ -1,0 +1,16 @@
+{
+  "maven.terminal.customEnv": [
+    {
+      "environmentVariable": "GOOGLE_CLIENT_ID",
+      "value": "your-google-client-id"
+    },
+    {
+      "environmentVariable": "GOOGLE_CLIENT_SECRET",
+      "value": "your-google-client-secret"
+    },
+    {
+      "environmentVariable": "GOOGLE_REDIRECT_URI",
+      "value": "http://localhost:8000/auth/google/callback"
+    }
+  ]
+}
