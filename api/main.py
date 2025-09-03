@@ -17,9 +17,14 @@ app.add_middleware(
     allow_methods=["*"], allow_headers=["*"]
 )
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Ensure /tmp exists for uploads
+UPLOAD_DIR = "/tmp"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-UPLOAD_DIR = "/tmp"  # Use /tmp for all file ops on Vercel/serverless
+# Mount static files only if the directory exists
+STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+if os.path.isdir(STATIC_DIR):
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # ========== MODELS ==========
 
@@ -97,25 +102,32 @@ async def report_issue(
         file_ext = photo.filename.split('.')[-1]
         photo_filename = f"{issue_id}_photo.{file_ext}"
         photo_path = os.path.join(UPLOAD_DIR, photo_filename)
-        with open(photo_path, "wb") as f:
-            f.write(await photo.read())
-        ai_analysis = analyze_photo_ai(photo_path)
-
+        try:
+            with open(photo_path, "wb") as f:
+                f.write(await photo.read())
+            ai_analysis = analyze_photo_ai(photo_path)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Photo upload failed: {str(e)}")
     # --- AUDIO ---
     if audio:
         file_ext = audio.filename.split('.')[-1]
         audio_filename = f"{issue_id}_audio.{file_ext}"
         audio_path = os.path.join(UPLOAD_DIR, audio_filename)
-        with open(audio_path, "wb") as f:
-            f.write(await audio.read())
-
+        try:
+            with open(audio_path, "wb") as f:
+                f.write(await audio.read())
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Audio upload failed: {str(e)}")
     # --- VIDEO ---
     if video:
         file_ext = video.filename.split('.')[-1]
         video_filename = f"{issue_id}_video.{file_ext}"
         video_path = os.path.join(UPLOAD_DIR, video_filename)
-        with open(video_path, "wb") as f:
-            f.write(await video.read())
+        try:
+            with open(video_path, "wb") as f:
+                f.write(await video.read())
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Video upload failed: {str(e)}")
 
     issue_obj = Issue(
         id=issue_id,
@@ -180,4 +192,7 @@ async def analytics_summary():
 
 @app.get("/")
 async def serve_frontend():
-    return FileResponse("static/index.html")
+    index_path = os.path.join(STATIC_DIR, "index.html")
+    if os.path.isfile(index_path):
+        return FileResponse(index_path)
+    return JSONResponse(content={"message": "Smart Civic Issue Reporting API is running."})
