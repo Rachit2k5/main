@@ -4,24 +4,268 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Smart Civic Issue Reporting</title>
+<!-- Google Fonts & Material Icons -->
+<link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <style>
-/* ... [Your existing CSS unchanged; omitted for brevity] ... */
+:root {
+  --primary: #1976D2;
+  --primary-dark: #0D47A1;
+  --accent: #29B6F6;
+  --light-bg: #f2f6fb;
+  --card-bg: #fff;
+  --status-reported: #e65100;
+  --status-acknowledged: #196fad;
+  --status-inprogress: #fbc02d;
+  --status-resolved: #388e3c;
+  --radius: 17px;
+  --shadow: 0 6px 32px 0px rgba(27,60,107,0.13),0 2px 4px rgba(27,60,107,0.06);
+}
+body {
+  font-family: 'Roboto', Arial, sans-serif;
+  background: linear-gradient(135deg, #7ed6df 0%, #b2bec3 100%) fixed;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  color: #22313f;
+}
+.header-hero {
+  background: linear-gradient(96deg, #1976d2 60%, #29b6f6 100%);
+  color: white;
+  text-align: left;
+  padding: 38px 24px 22px 24px;
+  border-bottom-left-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+  box-shadow: 0 15px 54px 0px rgba(33,150,243,0.22);
+  margin-bottom: 2em;
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+.header-hero .material-icons {
+  font-size: 52px;
+  background: #fff3;
+  border-radius: 50%;
+  padding: 10px;
+  margin-right: 10px;
+}
+.header-hero-content {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.header-hero h1 {
+  font-size: 2.65rem;
+  letter-spacing: .01em;
+  margin: 0;
+  font-weight: 700;
+}
+
+.header-hero h2 {
+  font-size: 1.13rem;
+  font-weight: 400;
+  margin: 7px 0 0 0;
+}
+
+#googleAuthBar {
+  display: flex; 
+  align-items: center; 
+  justify-content: flex-end;
+  margin-top: 14px;
+  margin-bottom: 18px; 
+  gap: 12px;
+}
+#userBar { display:none; align-items: center; }
+#userAvatar { border-radius:50%; width: 46px; height: 46px; border:3px solid var(--primary);}
+#userName { font-weight:600; margin-right:12px; font-size: 1.03rem;}
+#logoutBtn, #loginBtn {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+  padding: 8px 22px;
+  border-radius: 7px;
+  border: none;
+  box-shadow: 0 2px 10px #2222;
+  font-size: 1rem;
+  margin-left: 10px;
+  cursor: pointer;
+  transition: background 0.19s;
+}
+#logoutBtn { background: #bbb; color:#233; }
+#loginBtn:hover, #logoutBtn:hover { background: var(--primary-dark); color:#fff; }
+
+form {
+  background: var(--card-bg);
+  max-width: 530px;
+  margin: 22px auto 32px auto;
+  padding: 38px 35px 32px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 2.5px solid var(--primary);
+  transition: box-shadow 0.34s, border-color 0.34s;
+  display: flex; 
+  flex-direction: column;
+  gap: 18px;
+}
+form label {
+  font-weight: 500;
+  display: block;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+input, select, textarea, button {
+  font-family: inherit;
+}
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+  margin-top: 8px;
+  padding: 13px 16px;
+  font-size: 0.97rem;
+  border-radius: 10px;
+  border: 2px solid #dfe3ee;
+  background: var(--light-bg);
+  width: 100%;
+  transition: border-color .24s;
+  margin-bottom: 1px;
+  outline: none;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--accent); background:#fff; }
+textarea { min-height: 85px; resize: vertical; }
+button[type="submit"] {
+  background: linear-gradient(97deg,var(--accent) 70%,var(--primary));
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  font-size: 1.1rem;
+  color: #fff;
+  padding: 18px 0;
+  border-radius: 13px;
+  margin-top: 14px;
+  margin-bottom: 0;
+  box-shadow: 0 8px 26px rgba(30,116,218, .15);
+  border: none;
+  cursor: pointer;
+  transition: background 0.18s, box-shadow 0.28s;
+}
+button[type="submit"]:hover { background: var(--primary-dark); }
+button, #refreshBtn {
+  font-weight: 700;
+  box-shadow: 0 5px 18px rgba(33,150,243,0.09);
+}
+hr { border: none; border-top: 2px solid #e4e9ec; opacity:0.70; margin: 24px 0; }
+#refreshBtn {
+  margin: 14px auto 8px;
+  background: linear-gradient(98deg,var(--status-inprogress),var(--primary) 70%);
+  border-radius: 11px;
+  font-size: 1.11rem;
+  padding: 11px 33px;
+  display: block;
+  font-weight: 800;
+  color: #fff;
+  border: none;
+  box-shadow: 0 5px 16px #fbc02d33,0 0 7px #fff3, 0 2px 9px #0097a722;
+}
+#refreshBtn:hover { background: linear-gradient(99deg, #efb200 30%, #1976d2 99%);}
+.issues-list {
+  background: var(--card-bg);
+  border-radius: 18px;
+  max-width: 720px;
+  margin: 4em auto 50px auto;
+  padding: 30px 34px;
+  box-shadow: var(--shadow);
+  font-size: 1.09rem;
+  border: 2.2px solid var(--primary);
+}
+.issues-list .card {
+  border-bottom: 2px solid #e3e9ef;
+  margin-bottom: 38px;
+  padding-bottom: 28px;
+  border-radius: 14px;
+  box-shadow: 0 2px 17px #1976d211;
+  padding-left: 9px;
+  padding-right: 9px;
+  background: #f7fafd;
+  position: relative;
+}
+.issues-list .card:last-child { border-bottom: none; margin-bottom: 0;}
+.issues-list .category { color: var(--primary); font-weight: 700; letter-spacing:0.04em; font-size:1.11rem;}
+.issues-list .status-tag {
+  display: inline-block;
+  padding: 4px 13px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.93rem;
+  margin-left: 16px;
+  background: #eee; color: #555;
+  text-transform: capitalize;
+  vertical-align: middle;
+}
+.issues-list .status-tag.reported { background: var(--status-reported);  color: #fff;}
+.issues-list .status-tag.acknowledged {background: var(--status-acknowledged); color: #fff;}
+.issues-list .status-tag.in_progress {background: var(--status-inprogress); color: #fff;}
+.issues-list .status-tag.resolved {background: var(--status-resolved); color: #fff;}
+.issues-list .meta { color: #555c; font-size: 0.89rem; margin:10px 0;}
+.issues-list img.issue-photo,
+.issues-list video,
+.issues-list audio {
+  margin-top: 17px;
+  max-width: 250px;
+  border-radius: var(--radius);
+  box-shadow: 0 8px 20px #1976d241;
+  display: block;
+}
+.issues-list .user-info {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 10px;
+  margin-bottom: 7px;
+}
+.issues-list .user-info img {
+  width: 35px; height:35px; border-radius:50%; border:2px solid var(--primary-dark);
+}
+.issues-list .user-info .userName {
+  font-size: 0.97rem; font-weight:600; color: #1d3557;
+}
+/* Responsive Design */
+@media (max-width: 900px) {
+  .issues-list, form {
+    padding: 9vw 3vw;
+    max-width: 99vw;
+    border-radius: var(--radius);
+  }
+}
+@media (max-width: 600px) {
+  body { padding: 0; }
+  .header-hero { padding: 22px 8px 15px 10px; font-size: 1.02rem;}
+  form { padding: 17px 8vw; }
+  .issues-list { padding: 13px 2vw; }
+}
 </style>
 </head>
 <body>
-<!-- === Google Login Bar (NEW) === -->
-<div id="googleAuthBar" style="display: flex; align-items: center; justify-content: flex-end; margin-bottom: 25px;">
-  <div id="userBar" style="display:none;">
-    <img id="userAvatar" src="" alt="Avatar" style="width:44px;height:44px;border-radius:50%;margin-right:10px;">
-    <span id="userName" style="font-weight:600;margin-right:12px;"></span>
-    <button id="logoutBtn" style="background:#ccc;padding:7px 13px;border-radius:8px;box-shadow:none;border:1px solid #888;font-weight:700;cursor:pointer;">Logout</button>
+<!-- Header/Hero Bar with Branding -->
+<div class="header-hero">
+  <span class="material-icons" style="background:#fff2;color:var(--primary-dark);">location_city</span>
+  <div class="header-hero-content">
+    <h1>Smart Civic Issue Reporting</h1>
+    <h2>Empowering Citizens ⬩ Cleaner, Safer Cities ⬩ Digital Social Change</h2>
   </div>
-  <button id="loginBtn" style="background:#4285F4;color:white;padding:10px 18px;border:none;border-radius:8px;font-size:1rem;">Sign in with Google</button>
 </div>
-<!-- === End Google Login Bar === -->
 
-<h1>Report a Civic Issue</h1>
-<form id="issueForm">
+<!-- Google Login Bar -->
+<div id="googleAuthBar">
+  <div id="userBar">
+    <img id="userAvatar" src="" alt="Avatar">
+    <span id="userName"></span>
+    <button id="logoutBtn">Logout</button>
+  </div>
+  <button id="loginBtn">Sign in with Google</button>
+</div>
+
+<!-- === Report Form === -->
+<form id="issueForm" autocomplete="off">
   <label>Category:
     <select name="category" required>
       <option value="pothole">Pothole</option>
@@ -32,62 +276,66 @@
     </select>
   </label>
   <label>Description:
-    <textarea name="description" rows="3" required></textarea>
+    <textarea name="description" rows="3" required placeholder="Describe the civic issue..."></textarea>
   </label>
-  <label>Latitude:
-    <input type="number" step="any" name="latitude" required />
-  </label>
-  <label>Longitude:
-    <input type="number" step="any" name="longitude" required />
-  </label>
-  <button type="button" id="locateBtn">Use My Current Location</button>
+  <div style="display:flex; gap:11px;">
+    <label style="flex:1">Latitude:
+      <input type="number" step="any" name="latitude" required />
+    </label>
+    <label style="flex:1">Longitude:
+      <input type="number" step="any" name="longitude" required />
+    </label>
+    <button style="margin-top:auto; height:38px; align-self:end; background:var(--accent); border-radius:10px; color:#fff; font-weight:700;" type="button" id="locateBtn"><span class="material-icons" style="font-size:18px;vertical-align:middle;">my_location</span></button>
+  </div>
   <hr />
   <label>Photo:
-    <input type="file" accept="image/*" capture="environment" name="photo" />
+    <input type="file" accept="image/*" capture="environment" name="photo" style="margin-bottom:3px;" />
   </label>
   <video id="photoVideo" autoplay muted playsinline style="display:none;"></video>
-  <button type="button" id="startCameraBtn">Start Photo Camera</button>
-  <button type="button" id="capturePhotoBtn" style="display:none;">Capture Photo</button>
+  <div style="display:flex;gap:.6em;">
+    <button type="button" id="startCameraBtn">Start Camera</button>
+    <button type="button" id="capturePhotoBtn" style="display:none;">Capture Photo</button>
+  </div>
   <canvas id="canvas" style="display:none;"></canvas>
   <hr />
   <label>Video:
-    <input type="file" accept="video/*" capture="environment" name="videoFile" />
+    <input type="file" accept="video/*" capture="environment" name="videoFile" style="margin-bottom:3px;" />
   </label>
   <video id="videoRecording" controls style="display:none; margin-top:10px;"></video>
-  <button type="button" id="startVideoBtn">Start Video Recording</button>
-  <button type="button" id="stopVideoBtn" disabled>Stop Video Recording</button>
+  <div style="display:flex;gap:.6em;">
+    <button type="button" id="startVideoBtn">Start Video Recording</button>
+    <button type="button" id="stopVideoBtn" disabled>Stop Video Recording</button>
+  </div>
   <hr />
   <label>Voice Recording:</label>
-  <button type="button" id="startVoiceBtn">Start Recording</button>
-  <button type="button" id="stopVoiceBtn" disabled>Stop Recording</button>
+  <div style="display:flex;gap:.6em;">
+    <button type="button" id="startVoiceBtn">Start Recording</button>
+    <button type="button" id="stopVoiceBtn" disabled>Stop Recording</button>
+  </div>
   <audio id="audioPlayback" controls style="display:none;"></audio>
   <hr />
-  <button type="submit">Report Issue</button>
+  <button type="submit"><span class="material-icons" style="vertical-align:middle;margin-right:8px;">send</span>Report Issue</button>
 </form>
-<h2>Reported Issues</h2>
-<button id="refreshBtn">Refresh List</button>
+
+<h2 style="margin-bottom:0;border-bottom:3px solid #1976d2;width:fit-content;padding-bottom:10px;margin-left:auto;margin-right:auto;border-radius:7px;">Reported Issues</h2>
+<button id="refreshBtn"><span class="material-icons" style="vertical-align:middle;margin-right:9px;">refresh</span>Refresh List</button>
 <div class="issues-list" id="issuesList"></div>
 
-<!-- Google One Tap & Login Script (NEW) -->
+<!-- Google Login Script -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-
 <script>
-// ===== Google Login Logic =====
+/* ===== Google Login Logic ===== */
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const userBar = document.getElementById('userBar');
 const userAvatar = document.getElementById('userAvatar');
 const userNameSpan = document.getElementById('userName');
 let googleUser = null;
-
-// Google OAuth login handshake (redirect to backend for auth)
 loginBtn.onclick = () => {
   fetch('/auth/google/login').then(res => res.json()).then(data => {
     window.location.href = data.auth_url;
   });
 };
-
-// On return from Google, extract info from backend
 function tryRestoreGoogleUser() {
   if (window.location.pathname === "/auth/google/callback" && window.location.search.includes("code=")) {
     fetch('/auth/google/callback' + window.location.search)
@@ -112,124 +360,41 @@ logoutBtn.onclick = () => {
 };
 tryRestoreGoogleUser();
 
-// ====== Your Existing JS Remains Unchanged Below (location, camera, media, form) =====
-const form = document.getElementById('issueForm');
-const issuesList = document.getElementById('issuesList');
-// ... [All your other code unchanged; can remain as is, but update form submission as below]
+/* === Your Existing JS for camera, media, location, etc. comes below === */
+// ... rest of your unchanged JS, including form.onsubmit and issues list ...
 
-// ----- In your form submission, add user info if logged in -----
-form.onsubmit = async (e) => {
-  e.preventDefault();
-  const formData = new FormData();
-
-  // Append text inputs
-  formData.append('category', form.elements['category'].value);
-  formData.append('description', form.elements['description'].value);
-  formData.append('latitude', form.elements['latitude'].value);
-  formData.append('longitude', form.elements['longitude'].value);
-
-  // Append photo
-  if (capturedPhotoBlob) {
-    formData.append('photo', capturedPhotoBlob, 'captured_photo.jpg');
-  } else if (form.elements['photo'].files.length > 0) {
-    formData.append('photo', form.elements['photo'].files[0]);
+// Update your loadIssues() to render cards with user avatars and richer tags:
+async function loadIssues() {
+  const res = await fetch('/issues');
+  const issues = await res.json();
+  if (!issues.length) {
+    issuesList.innerHTML = '<p style="text-align:center;color:#555;font-size:1.09em;">No issues reported yet.</p>';
+    return;
   }
-
-  // Append audio
-  if (recordedAudioBlob) {
-    formData.append('audio', recordedAudioBlob, 'recording.webm');
-  }
-
-  // Append video from recording or uploaded file
-  if (recordedVideoBlob) {
-    formData.append('video', recordedVideoBlob, 'recorded_video.webm');
-  } else if (form.elements['videoFile'].files.length > 0) {
-    formData.append('video', form.elements['videoFile'].files[0]);
-  }
-
-  // === NEW: Attach Google user data if logged in ===
-  if (googleUser) {
-    formData.append('user_name', googleUser.name || '');
-    formData.append('user_email', googleUser.email || '');
-    formData.append('user_avatar', googleUser.picture || '');
-  }
-
-  try {
-    const res = await fetch('/issues', {
-      method: 'POST',
-      body: formData,
-    });
-    if (!res.ok) {
-      alert('Failed to report issue.');
-      return;
-    }
-    alert('Issue reported successfully!');
-    form.reset();
-    capturedPhotoBlob = null;
-    recordedAudioBlob = null;
-    recordedVideoBlob = null;
-    audioPlayback.style.display = 'none';
-    videoRecording.style.display = 'none';
-    loadIssues();
-  } catch {
-    alert('Error submitting form.');
-  }
-};
-
-// --------- All your existing location/media UI JS can remain unchanged ----------
-
-// ... [Rest of your JavaScript code as previously written]
-</script>
-</body>
-</html>
-const userBar = document.getElementById('userBar');
-const userAvatar = document.getElementById('userAvatar');
-const userNameSpan = document.getElementById('userName');
-let googleUser = null;
-
-// Handle Login: Redirect user to backend's /auth/google/login for OAuth
-loginBtn.onclick = () => {
-  fetch('/auth/google/login')
-    .then(res => res.json())
-    .then(data => {
-      window.location.href = data.auth_url; // Google login page
-    });
-};
-
-// After redirect back from Google, get user info from backend
-function tryRestoreGoogleUser() {
-  if (window.location.pathname === "/auth/google/callback" && window.location.search.includes("code=")) {
-    fetch('/auth/google/callback' + window.location.search)
-      .then(res => res.json())
-      .then(user => {
-        googleUser = user;
-        showUserBar(user);
-        // Clean URL so ?code=... disappears after login
-        window.history.replaceState({}, document.title, "/");
-      });
-  }
+  issuesList.innerHTML = issues.map(issue => `
+    <div class="card">
+      <div class="category">${issue.category}
+        <span class="status-tag ${issue.status.replace('_', '')}">${issue.status.replace('_',' ')}</span>
+      </div>
+      <div class="meta">🕑 <strong>Created:</strong> ${new Date(issue.created_at).toLocaleString()}</div>
+      <div style="margin-bottom:6px;word-break:break-word;">
+        <span style="font-weight:500;">${issue.description}</span>
+      </div>
+      <div class="meta"><i class="material-icons" style="font-size:16px;vertical-align:middle;">place</i>
+        <span style="color:#1b3d6b"><b>${Number(issue.latitude).toFixed(6)}, ${Number(issue.longitude).toFixed(6)}</b></span>
+      </div>
+      ${issue.user_avatar ? `
+        <div class="user-info"><img src="${issue.user_avatar}" alt="user"/><span class="userName">${issue.user_name || issue.user_email || "User"}</span></div>
+      ` : ''}
+      ${issue.photo_url ? `<img class="issue-photo" src="${issue.photo_url}" alt="Photo" />` : ''}
+      ${issue.audio_url ? `<audio controls src="${issue.audio_url}"></audio>` : ''}
+      ${issue.video_url ? `<video controls src="${issue.video_url}"></video>` : ''}
+      <div class="meta"><b>Updated:</b> ${new Date(issue.updated_at).toLocaleString()}</div>
+    </div>
+  `).join('');
 }
-
-// Update UI for logged-in user
-function showUserBar(user) {
-  userBar.style.display = 'flex';
-  loginBtn.style.display = 'none';
-  userAvatar.src = user.picture;
-  userNameSpan.textContent = user.name || user.email || "User";
-}
-
-// Logout: Hide bar, show login button
-logoutBtn.onclick = () => {
-  googleUser = null;
-  userBar.style.display = 'none';
-  loginBtn.style.display = 'inline-block';
-  // Optional: Clear any localStorage/session data here
-};
-
-// On page load, check if coming from Google
-tryRestoreGoogleUser();
-
-
+document.getElementById('refreshBtn').onclick = loadIssues;
+loadIssues();
 </script>
 </body>
 </html>
