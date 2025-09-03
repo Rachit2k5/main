@@ -1,8 +1,9 @@
 import os
 import uuid
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Query
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, validator
 from enum import Enum
 from typing import Optional, List
@@ -15,6 +16,8 @@ app.add_middleware(
     allow_origins=["*"], allow_credentials=True,
     allow_methods=["*"], allow_headers=["*"]
 )
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 UPLOAD_DIR = "/tmp"  # Use /tmp for all file ops on Vercel/serverless
 
@@ -176,5 +179,5 @@ async def analytics_summary():
     }
 
 @app.get("/")
-async def root():
-    return JSONResponse({"msg": "Smart Civic Issue Reporting API running."})
+async def serve_frontend():
+    return FileResponse("static/index.html")
