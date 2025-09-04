@@ -14,11 +14,14 @@ from collections import defaultdict
 
 load_dotenv()
 
+# Get allowed origins from environment or set default
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+
 app = FastAPI(title="Smart Civic Reporting System")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,  # Specify allowed origins explicitly
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
