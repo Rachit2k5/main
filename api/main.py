@@ -1,44 +1,29 @@
-from dotenv import load_dotenv
-import os
-import uuid
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Query, Request
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, validator
 from enum import Enum
-from typing import Optional, List
 from datetime import datetime
+from typing import Optional, List
+import os
+import uuid
 from collections import defaultdict
 
-
-load_dotenv()
-
-# Get allowed origins from environment or set default
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 
 app = FastAPI(title="Smart Civic Reporting System")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,  # Specify allowed origins explicitly
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
 )
 
+# Upload directory path in Vercel env (use /tmp for temp storage)
 UPLOAD_DIR = "/tmp"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-# Expose uploaded files via /uploads URL
-UPLOAD_URL_PATH = "/uploads"
-app.mount(UPLOAD_URL_PATH, StaticFiles(directory=UPLOAD_DIR), name="uploads")
-
-# Static frontend directory, adjust if needed
-STATIC_DIR = os.path.join(os.path.dirname(__file__), "../static")
-if os.path.isdir(STATIC_DIR):
-    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-
 
 class IssueCategory(str, Enum):
     pothole = "pothole"
@@ -82,11 +67,10 @@ class Issue(BaseModel):
             raise ValueError("Longitude must be between -180 and 180")
         return v
 
-
 issues_db = {}
 
 def analyze_photo_ai(file_path: str) -> str:
-    # Placeholder for AI analysis
+    # Placeholder AI
     return "AI: Detected potential issue; please verify"
 
 def allowed_file(filename: str, allowed_exts: set) -> bool:
@@ -95,8 +79,7 @@ def allowed_file(filename: str, allowed_exts: set) -> bool:
     ext = filename.rsplit('.', 1)[1].lower()
     return ext in allowed_exts
 
-
-@app.post("/issues", response_model=Issue)
+@app.post("/api/issues", response_model=Issue)
 async def report_issue(
     category: IssueCategory = Form(...),
     description: str = Form(...),
@@ -110,65 +93,47 @@ async def report_issue(
     audio: Optional[UploadFile] = File(None),
     video: Optional[UploadFile] = File(None),
 ):
-
-    # Handle avatar: prefer file upload
     saved_avatar_url = None
     if avatar_file:
         ext = avatar_file.filename.rsplit('.', 1)[1].lower()
         if ext not in {"jpg", "jpeg", "png", "gif", "bmp"}:
-            raise HTTPException(status_code=400, detail="Avatar file must be a valid image")
+            raise HTTPException(status_code=400, detail="Invalid avatar file type")
         avatar_filename = f"avatar_{uuid.uuid4()}.{ext}"
         avatar_path = os.path.join(UPLOAD_DIR, avatar_filename)
-        try:
-            with open(avatar_path, "wb") as f:
-                f.write(await avatar_file.read())
-            saved_avatar_url = f"{UPLOAD_URL_PATH}/{avatar_filename}"
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Avatar upload failed: {str(e)}")
+        with open(avatar_path, "wb") as f:
+            f.write(await avatar_file.read())
+        saved_avatar_url = f"/uploads/{avatar_filename}"
     elif user_avatar:
         saved_avatar_url = user_avatar
 
-
-    # Handle photo
     photo_filename = None
     ai_analysis = None
     if photo:
         if not allowed_file(photo.filename, {"jpg", "jpeg", "png", "gif", "bmp"}):
-            raise HTTPException(status_code=400, detail="Photo must be a valid image file")
+            raise HTTPException(status_code=400, detail="Invalid photo file type")
         photo_filename = f"photo_{uuid.uuid4()}.{photo.filename.rsplit('.',1)[1].lower()}"
         photo_path = os.path.join(UPLOAD_DIR, photo_filename)
-        try:
-            with open(photo_path, "wb") as f:
-                f.write(await photo.read())
-            ai_analysis = analyze_photo_ai(photo_path)
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Photo upload failed: {str(e)}")
+        with open(photo_path, "wb") as f:
+            f.write(await photo.read())
+        ai_analysis = analyze_photo_ai(photo_path)
 
-    # Handle audio
     audio_filename = None
     if audio:
         if not allowed_file(audio.filename, {"mp3", "wav", "ogg", "webm"}):
-            raise HTTPException(status_code=400, detail="Audio must be a valid audio file")
+            raise HTTPException(status_code=400, detail="Invalid audio file type")
         audio_filename = f"audio_{uuid.uuid4()}.{audio.filename.rsplit('.',1)[1].lower()}"
         audio_path = os.path.join(UPLOAD_DIR, audio_filename)
-        try:
-            with open(audio_path, "wb") as f:
-                f.write(await audio.read())
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Audio upload failed: {str(e)}")
+        with open(audio_path, "wb") as f:
+            f.write(await audio.read())
 
-    # Handle video
     video_filename = None
     if video:
         if not allowed_file(video.filename, {"mp4", "webm", "mov", "avi", "mkv"}):
-            raise HTTPException(status_code=400, detail="Video must be a valid video file")
+            raise HTTPException(status_code=400, detail="Invalid video file type")
         video_filename = f"video_{uuid.uuid4()}.{video.filename.rsplit('.',1)[1].lower()}"
         video_path = os.path.join(UPLOAD_DIR, video_filename)
-        try:
-            with open(video_path, "wb") as f:
-                f.write(await video.read())
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Video upload failed: {str(e)}")
+        with open(video_path, "wb") as f:
+            f.write(await video.read())
 
     issue_id = str(uuid.uuid4())
     now = datetime.utcnow()
@@ -194,21 +159,16 @@ async def report_issue(
     issues_db[issue_id] = issue
     return issue
 
-
-@app.get("/issues", response_model=List[Issue])
-async def list_issues(
-    status: Optional[IssueStatus] = None,
-    category: Optional[IssueCategory] = None,
-):
+@app.get("/api/issues", response_model=List[Issue])
+async def list_issues(status: Optional[IssueStatus] = None, category: Optional[IssueCategory] = None):
     results = list(issues_db.values())
-    if status is not None:
+    if status:
         results = [issue for issue in results if issue.status == status]
-    if category is not None:
+    if category:
         results = [issue for issue in results if issue.category == category]
     return results
 
-
-@app.patch("/issues/{issue_id}/status", response_model=Issue)
+@app.patch("/api/issues/{issue_id}/status", response_model=Issue)
 async def update_status(issue_id: str, status: IssueStatus):
     if issue_id not in issues_db:
         raise HTTPException(status_code=404, detail="Issue not found")
@@ -217,8 +177,7 @@ async def update_status(issue_id: str, status: IssueStatus):
     issue.updated_at = datetime.utcnow()
     return issue
 
-
-@app.get("/analytics/summary")
+@app.get("/api/analytics/summary")
 async def analytics_summary():
     total_issues = len(issues_db)
     by_category = defaultdict(int)
@@ -242,10 +201,10 @@ async def analytics_summary():
         "average_resolution_time_seconds": avg_resolution,
     }
 
-
 @app.get("/")
 async def root():
-    index_file = os.path.join(STATIC_DIR, "index.html")
-    if os.path.isfile(index_file):
-        return FileResponse(index_file)
-    return JSONResponse({"message": "Smart Civic Reporting API is running"})
+    return {"message": "Smart Civic Reporting API is running"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
