@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Form, UploadFile, File, HTTPException
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from enum import Enum
@@ -11,15 +12,16 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # adjust per your frontend origin
+    allow_origins=["*"],  # For demo, use your domain in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-UPLOAD_DIR = "/tmp"
+# Use /tmp/uploads directory for saving photos
+BASE_UPLOAD_DIR = "/tmp"
+UPLOAD_DIR = os.path.join(BASE_UPLOAD_DIR, "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-
 
 class IssueCategory(str, Enum):
     Pothole = "Pothole"
@@ -48,11 +50,10 @@ class Issue(BaseModel):
     priority: IssuePriority
     location: str
     description: str
-    photo_url: Optional[str] = None
+    photo_filename: Optional[str] = None
     status: IssueStatus = IssueStatus.Submitted
     created_at: datetime
     updated_at: datetime
-
 
 issues_db = {}
 
@@ -65,14 +66,14 @@ async def report_issue(
     issue_description: str = Form(...),
     issue_photo: Optional[UploadFile] = File(None),
 ):
-    photo_url = None
+    photo_filename = None
     if issue_photo:
         ext = issue_photo.filename.rsplit('.', 1)[-1]
         filename = f"photo_{uuid.uuid4()}.{ext}"
-        filepath = os.path.join(UPLOAD_DIR, filename)
+        filepath = os.path.join(UPLOAD_DIR, filename)   # Save to /tmp/uploads
         with open(filepath, "wb") as f:
             f.write(await issue_photo.read())
-        photo_url = f"/uploads/{filename}"  # Adjust to actual static serving URL
+        photo_filename = filename  # Store file name only
 
     now = datetime.utcnow()
     issue_id = str(uuid.uuid4())
@@ -83,14 +84,13 @@ async def report_issue(
         priority=issue_priority,
         location=issue_location,
         description=issue_description,
-        photo_url=photo_url,
+        photo_filename=photo_filename,
         status=IssueStatus.Submitted,
         created_at=now,
         updated_at=now,
     )
     issues_db[issue_id] = issue
     return issue
-
 
 @app.get("/api/reports", response_model=List[Issue])
 async def get_reports(status: Optional[IssueStatus] = None, category: Optional[IssueCategory] = None):
@@ -101,7 +101,6 @@ async def get_reports(status: Optional[IssueStatus] = None, category: Optional[I
         results = [i for i in results if i.category == category]
     return results
 
-
 @app.patch("/api/admin/reports/{issue_id}/status", response_model=Issue)
 async def update_status(issue_id: str, status: IssueStatus):
     issue = issues_db.get(issue_id)
@@ -110,3 +109,16 @@ async def update_status(issue_id: str, status: IssueStatus):
     issue.status = status
     issue.updated_at = datetime.utcnow()
     return issue
+
+# Serve uploaded images stored in /tmp/uploads folder
+@app.get("/api/uploads/{filename}")
+async def get_uploaded_image(filename: str):
+    filepath = os.path.join(UPLOAD_DIR, filename)
+    if os.path.exists(filepath) and os.path.isfile(filepath):
+        return StreamingResponse(open(filepath, "rb"), media_type="image/jpeg")
+    else:
+        raise HTTPException(status_code=404, detail="Image not found")
+
+@app.get("/api/health")
+def health():
+    return {"status": "ok"}

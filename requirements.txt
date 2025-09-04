@@ -1,5 +1,5 @@
-fastapi==0.104.1
-uvicorn==0.24.0
-pydantic==1.10.9
-httpx==0.24.1
-sqlalchemy==2.0.20
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic
+jinja2

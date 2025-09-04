@@ -9,30 +9,29 @@
 <body>
     <!-- Header Navigation -->
 <header class="header">
-    <nav class="nav container" role="navigation" aria-label="Main Navigation">
-        <div class="nav__brand">
-            <h1 data-i18n="Civic Reporter">Civic Reporter</h1>
-        </div>
-        <ul class="nav__menu">
-            <li><a href="#home" class="nav__link active" data-nav="home" role="link" tabindex="0" data-i18n="Home">Home</a></li>
-            <li><a href="#report" class="nav__link" data-nav="report" role="link" tabindex="0" data-i18n="Report Issue">Report Issue</a></li>
-            <li><a href="#my-reports" class="nav__link" data-nav="my-reports" role="link" tabindex="0" data-i18n="My Reports">My Reports</a></li>
-            <li><a href="#admin" class="nav__link" data-nav="admin" role="link" tabindex="0" data-i18n="Admin Dashboard">Admin Dashboard</a></li>
-            <li class="nav__lang">
-                <select id="language-select" aria-label="Select Language">
-                    <option value="en">English</option>
-                    <option value="hi">हिन्दी</option>
-                </select>
-            </li>
-        </ul>
-        <button class="nav__toggle" aria-label="Toggle navigation menu" aria-haspopup="true" aria-expanded="false">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-    </nav>
+    <nav class="nav container" role="navigation" aria-label="Main Navigation">
+        <div class="nav__brand">
+            <h1 data-i18n="Civic Reporter">Civic Reporter</h1>
+        </div>
+        <ul class="nav__menu">
+            <li><a href="#home" class="nav__link active" data-nav="home" role="link" tabindex="0" data-i18n="Home">Home</a></li>
+            <li><a href="#report" class="nav__link" data-nav="report" role="link" tabindex="0" data-i18n="Report Issue">Report Issue</a></li>
+            <li><a href="#my-reports" class="nav__link" data-nav="my-reports" role="link" tabindex="0" data-i18n="My Reports">My Reports</a></li>
+            <li><a href="#admin" class="nav__link" data-nav="admin" role="link" tabindex="0" data-i18n="Admin Dashboard">Admin Dashboard</a></li>
+            <li class="nav__lang">
+                <select id="language-select" aria-label="Select Language">
+                    <option value="en">English</option>
+                    <option value="hi">हिन्दी</option>
+                </select>
+            </li>
+        </ul>
+        <button class="nav__toggle" aria-label="Toggle navigation menu" aria-haspopup="true" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </nav>
 </header>
-
 
     <main class="main" role="main">
         <!-- Home Section -->
@@ -177,7 +176,7 @@
                 </div>
 
                 <div class="reports-list" id="reports-list" role="region" aria-live="polite" aria-atomic="true" tabindex="0">
-                    <!-- Reports will be dynamically populated -->
+                    <!-- Reports will be dynamically populated here -->
                 </div>
             </div>
         </section>
@@ -270,5 +269,67 @@
     </div>
 
     <script src="app.js"></script>
+    <script>
+    // Handle report form submission
+    document.getElementById('report-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const fileInput = document.getElementById('issue-photo');
+        const formData = new FormData();
+        formData.append("issue_title", document.getElementById('issue-title').value);
+        formData.append("issue_category", document.getElementById('issue-category').value);
+        formData.append("issue_priority", document.getElementById('issue-priority').value);
+        formData.append("issue_location", document.getElementById('issue-location').value);
+        formData.append("issue_description", document.getElementById('issue-description').value);
+        if (fileInput.files[0]) {
+            formData.append("issue_photo", fileInput.files[0]);
+        }
+        fetch('/api/report', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => {
+            if (res.ok) {
+                alert('Issue reported successfully!');
+                // Optionally reset the form
+                document.getElementById('report-form').reset();
+            } else {
+                alert('Failed to report issue.');
+            }
+        })
+        .catch(() => alert('Failed to report issue.'));
+    });
+    </script>
+    <script>
+    // Fetch and render reports with images
+    function loadReports() {
+        fetch('/api/reports')
+            .then(res => res.json())
+            .then(data => {
+                const reportsList = document.getElementById('reports-list');
+                if (!reportsList) return;
+                reportsList.innerHTML = '';
+                data.forEach(report => {
+                    const div = document.createElement('div');
+                    div.className = 'report-card';
+                    div.innerHTML = `
+                        <h4>${report.title}</h4>
+                        <p><strong>Category:</strong> ${report.category}</p>
+                        <p><strong>Status:</strong> ${report.status || 'Submitted'}</p>
+                        <p><strong>Location:</strong> ${report.location}</p>
+                        <p>${report.description}</p>
+                        ${
+                          report.photo_filename
+                            ? `<img src="/api/uploads/${report.photo_filename}" alt="Uploaded Image" style="max-width: 200px; max-height: 200px; margin-top: 8px;" />`
+                            : ''
+                        }
+                    `;
+                    reportsList.appendChild(div);
+                });
+            });
+    }
+
+    // Load reports on page load
+    document.addEventListener('DOMContentLoaded', loadReports);
+    </script>
 </body>
 </html>
