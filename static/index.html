@@ -63,92 +63,39 @@ body {
   letter-spacing: 0.012em;
 }
 
-/* Auth Notice Overlay */
-#authNotice {
-  display:none;
-  position:fixed; z-index:25;
-  left:0; right:0; top:0; bottom:0;
-  background:rgba(230,238,246,0.98);
-  align-items:center; justify-content:center;
-}
-#authNotice .inner {
-  background:#fff;
-  margin:auto; border-radius:16px;
-  max-width:380px;
-  box-shadow:0 6px 30px #1976d222;
-  padding: 2em 2.4em 2.1em;
-  text-align: center;
-}
-#authNotice .inner .material-icons {
-  font-size:56px;color:#1976d2;
-  background:rgba(25,118,210,0.08);
-  padding:15px;border-radius:50%;
-}
-#authNotice .inner h2 {
-  margin-top:18px;margin-bottom:10px;
-  font-weight:900;font-size:1.28em;color:#155dae;
-}
-#authNotice .inner button {
-  margin-top: 1.7em;
-  background: linear-gradient(92deg,#1976D2,#29B6F6); color: #fff;
-  padding:11px 35px; font-size:1.09em;
-  border:none; border-radius:9px;font-weight:800;cursor:pointer;
-  box-shadow:0 2px 16px #29b6f633;
-  transition: background 0.18s;
-}
-#authNotice .inner button:active{ background:var(--primary-dark);}
-#googleAuthBar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 9px;
-  margin-top:14px; margin-bottom:18px;
-}
-#userBar { display: none; align-items:center; }
-#userAvatar { border-radius:50%; width: 38px; height: 38px; border:2.5px solid var(--primary); box-shadow:0 1px 8px #2232; }
-#userName { font-weight:600; margin-right:12px; font-size: 1.06rem;}
-
-#logoutBtn, #loginBtn {
-  background: var(--primary);
-  color:#fff; font-weight: 700;
-  padding: 7px 20px; border-radius: 7px; border: none;
-  box-shadow: 0 2px 10px #2222; font-size: .98rem; margin-left: 9px;
-  cursor: pointer;
-  transition: background 0.18s;
-}
-#logoutBtn { background: #bbb; color:#233; }
-#loginBtn:hover, #logoutBtn:hover { background:var(--primary-dark); color:#fff; }
-
 form {
   background: var(--card);
-  max-width: 480px;
-  margin: 25px auto 40px auto;
+  max-width: 500px;
+  margin: 27px auto 44px auto;
   padding: 36px 30px 30px;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   border: 2px solid var(--primary);
-  display: flex; flex-direction: column; gap:18px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   transition: box-shadow 0.32s, border-color 0.31s;
 }
 form label {
   font-weight: 500;
   margin-bottom: 0.2em;
   color: #155dae;
-  font-size:1.02em;
+  font-size:1.07em;
   display:block;
 }
 input,select,textarea,button{font-family:inherit;}
-input[type="text"],input[type="number"],select,textarea {
-  margin-top: 7px;
-  padding: 10px 14px;
-  font-size: .98em;
+input[type="text"],input[type="email"],input[type="number"],select,textarea {
+  margin-top: 8px;
+  padding: 11px 14px;
+  font-size: 1em;
   border-radius: 9px;
   border: 1.7px solid var(--input-border);
   background: var(--background);
   width: 100%;
-  transition: border-color .23s, box-shadow 0.17s;
   margin-bottom:1px;
-  outline: none; box-shadow:0 1px 3px #b2bec350;
+  outline: none;
+  transition: border-color .23s, box-shadow 0.17s;
+  box-shadow:0 1px 2px #b2bec334;
 }
 input:focus,select:focus,textarea:focus{border-color:var(--accent);background:#fff;box-shadow:0 2px 8px #29b6f633;}
 textarea{min-height: 75px;resize:vertical;}
@@ -170,7 +117,7 @@ button, #refreshBtn {
   box-shadow:0 4px 14px #1976d219;
 }
 
-hr { border: none; border-top: 2px solid #e4e9ec; opacity:0.65; margin:18px 0; }
+hr { border: none; border-top: 2px solid #e4e9ec; opacity:0.65; margin:19px 0; }
 #refreshBtn {
   margin: 10px auto 5px;
   background: linear-gradient(98deg,var(--accent),var(--primary) 80%);
@@ -198,7 +145,6 @@ hr { border: none; border-top: 2px solid #e4e9ec; opacity:0.65; margin:18px 0; }
   position:relative;
   transition:box-shadow 0.21s;
 }
-.issues-list .card:hover{box-shadow:0 7px 21px #1976d213;background:#e0edf7;}
 .issues-list .card:last-child{border-bottom:none;margin-bottom:0;}
 .issues-list .category { color:var(--primary);font-weight:700;letter-spacing:0.03em;font-size:1.11rem;}
 .issues-list .status-tag {
@@ -219,7 +165,7 @@ hr { border: none; border-top: 2px solid #e4e9ec; opacity:0.65; margin:18px 0; }
 .issues-list .meta { color:#555b; font-size:0.89em;margin:8px 0;}
 .issues-list img.issue-photo,
 .issues-list video,
-.issues-list audio {
+.issues-list audio, .issues-list img.user-avatar {
   margin-top:12px;max-width:240px;
   border-radius:var(--radius);
   box-shadow:0 6px 16px #1976d229;
@@ -228,12 +174,12 @@ hr { border: none; border-top: 2px solid #e4e9ec; opacity:0.65; margin:18px 0; }
 }
 .issues-list img.issue-photo:hover{box-shadow:0 8px 16px #29b6f650;transform:scale(1.04);}
 .issues-list .user-info {
-  display:flex;align-items:center;gap:9px;
-  margin-top:5px;margin-bottom:7px;}
-.issues-list .user-info img {
-  width:30px;height:30px;border-radius:50%;border:2px solid var(--primary-dark);box-shadow:0 1px 7px #16385d30;
+  display:flex;align-items:center;gap:11px;
+  margin-top:8px;margin-bottom:7px;}
+.issues-list .user-info img.user-avatar{
+  width:34px;height:34px;border-radius:50%;border:2px solid var(--primary-dark);box-shadow:0 1px 7px #16385d30;
 }
-.issues-list .user-info .userName { font-size:0.96em;font-weight:600;color:#1d3557;}
+.issues-list .user-info .userName { font-size:1em;font-weight:700;color:#1360a3;}
 /* Responsiveness */
 @media (max-width:900px){
   .issues-list,form{padding: 7vw 3vw;max-width:99vw;border-radius:var(--radius);}
@@ -255,33 +201,20 @@ hr { border: none; border-top: 2px solid #e4e9ec; opacity:0.65; margin:18px 0; }
   </div>
 </div>
 
-<div id="googleAuthBar">
-  <div id="userBar">
-    <img id="userAvatar" src="" alt="Avatar">
-    <span id="userName"></span>
-    <button id="logoutBtn">Logout</button>
-  </div>
-  <button id="loginBtn">Sign in with Google</button>
-</div>
-
-<!-- Auth Notice Overlay -->
-<div id="authNotice">
-  <div class="inner">
-    <span class="material-icons">verified_user</span>
-    <h2>Sign in to Report</h2>
-    <div style="color:#1c2833;font-size:1.06em;">
-      Sign in with Google to submit issues.<br>
-      Your profile photo and verified email will be used for authenticity.
-    </div>
-    <button id="loginBtnPrimary" style="margin-top:1.3em;">
-      <span class="material-icons" style="vertical-align:middle;">account_circle</span>
-      Sign in with Google
-    </button>
-  </div>
-</div>
-
-<!-- Improved Form - hidden unless auth -->
-<form id="issueForm" autocomplete="off" style="display:none;">
+<!-- Report Form (always visible) -->
+<form id="issueForm" autocomplete="off">
+  <label>Name:
+    <input type="text" name="user_name" placeholder="Your name" required>
+  </label>
+  <label>Email:
+    <input type="email" name="user_email" placeholder="Your email" required>
+  </label>
+  <label>Avatar (Photo URL or Upload):
+    <input type="url" name="user_avatar" placeholder="Paste photo URL (optional)">
+    <span style="display:block;margin:0.3em 0 0.3em 0;">OR</span>
+    <input type="file" accept="image/*" name="avatarUpload" style="font-size:0.94em;">
+  </label>
+  <hr>
   <label>Category:
     <select name="category" required>
       <option value="pothole">Pothole</option>
@@ -317,7 +250,7 @@ hr { border: none; border-top: 2px solid #e4e9ec; opacity:0.65; margin:18px 0; }
   <canvas id="canvas" style="display:none;"></canvas>
   <hr />
   <label>Video:
-    <input type="file" accept="video/*" capture="environment" name="videoFile"/>
+    <input type="file" accept="video/*" capture="environment" name="video"/>
   </label>
   <video id="videoRecording" controls style="display:none; margin-top:10px;"></video>
   <div style="display:flex;gap:.6em;">
@@ -339,112 +272,69 @@ hr { border: none; border-top: 2px solid #e4e9ec; opacity:0.65; margin:18px 0; }
 <button id="refreshBtn"><span class="material-icons" style="vertical-align:middle;margin-right:7px;">refresh</span>Refresh List</button>
 <div class="issues-list" id="issuesList"></div>
 
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
-const loginBtn = document.getElementById('loginBtn');
-const loginBtnPrimary = document.getElementById('loginBtnPrimary');
-const logoutBtn = document.getElementById('logoutBtn');
-const userBar = document.getElementById('userBar');
-const userAvatar = document.getElementById('userAvatar');
-const userNameSpan = document.getElementById('userName');
-const authNotice = document.getElementById('authNotice');
-const issueForm = document.getElementById('issueForm');
-
-let googleUser = null;
-
-// Show/hide UI components
-function updateUIAuthState() {
-  if (googleUser && googleUser.name && googleUser.email && googleUser.picture) {
-    userBar.style.display = 'flex';
-    loginBtn.style.display = 'none';
-    if (loginBtnPrimary) loginBtnPrimary.style.display = 'none';
-    authNotice.style.display = 'none';
-    userAvatar.src = googleUser.picture;
-    userNameSpan.textContent = googleUser.name || googleUser.email || "User";
-    issueForm.style.display = 'flex';
-  } else {
-    userBar.style.display = 'none';
-    loginBtn.style.display = 'inline-block';
-    if (loginBtnPrimary) loginBtnPrimary.style.display = 'inline-block';
-    authNotice.style.display = 'flex';
-    issueForm.style.display = 'none';
-  }
-}
-
-// Both login buttons launch Google sign-in
-loginBtn.onclick = loginBtnPrimary.onclick = () => {
-  fetch('/auth/google/login').then(res => res.json()).then(data => {
-    window.location.href = data.auth_url;
-  });
-};
-
-function tryRestoreGoogleUser() {
-  if (window.location.pathname === "/auth/google/callback" && window.location.search.includes("code=")) {
-    fetch('/auth/google/callback' + window.location.search)
-      .then(res => res.json())
-      .then(user => {
-        googleUser = user;
-        updateUIAuthState();
-        window.history.replaceState({}, document.title, "/");
-      });
-  } else {
-    // If already logged in via session
-    fetch('/auth/google/me').then(res => {
-      if (res.ok) return res.json();
-      else throw new Error();
-    }).then(user => {
-      googleUser = user;
-      updateUIAuthState();
-    }).catch(() => {
-      googleUser = null;
-      updateUIAuthState();
-    });
-  }
-}
-
-// Log out
-logoutBtn.onclick = () => {
-  fetch('/auth/google/logout').then(() => {
-    googleUser = null;
-    updateUIAuthState();
-  }).catch(() => {
-    googleUser = null;
-    updateUIAuthState();
-  });
-};
-tryRestoreGoogleUser();
-updateUIAuthState();
-
-// --- Civic Issue Form Scripts (unchanged, see original for camera/audio/video integration)
-// --- Example: form submission loading user info ---
-issueForm.onsubmit = async (e) => {
-  e.preventDefault();
-  if (!googleUser || !googleUser.name || !googleUser.email || !googleUser.picture) {
-    alert('Sign in with Google before reporting an issue!');
+// Geo location support (unchanged)
+const form = document.getElementById('issueForm');
+const issuesList = document.getElementById('issuesList');
+const latitudeInput = form.elements['latitude'];
+const longitudeInput = form.elements['longitude'];
+document.getElementById('locateBtn').onclick = () => {
+  if (!navigator.geolocation) {
+    alert('Geolocation not supported by your browser.');
     return;
   }
-  const formData = new FormData(issueForm);
-  formData.append('user_name', googleUser.name || '');
-  formData.append('user_email', googleUser.email || '');
-  formData.append('user_avatar', googleUser.picture || '');
-  // Append any files from camera/voice elements as in your code
+  navigator.geolocation.getCurrentPosition(position => {
+    latitudeInput.value = position.coords.latitude.toFixed(6);
+    longitudeInput.value = position.coords.longitude.toFixed(6);
+  }, () => alert('Unable to retrieve your location.'));
+};
+
+// If user uploads avatar file, temporarily display as local URL and submit
+let userAvatarUrl = '';
+form.elements['avatarUpload'].addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (file) {
+    // Show preview (optional)
+    userAvatarUrl = URL.createObjectURL(file);
+    // Optionally use this local URL for display preview here
+    // In POST, the image will be sent as form-data field 'avatarUpload'
+  } else {
+    userAvatarUrl = '';
+  }
+});
+
+// FORM SUBMISSION
+form.onsubmit = async (e) => {
+  e.preventDefault();
+  const formData = new FormData(form);
+  // 1. Prefer uploaded file as avatar, else use url, else none
+  let avatarValue = '';
+  if (form.elements['avatarUpload'].files.length > 0) {
+    avatarValue = ''; // Will send file as 'avatarUpload'
+  } else {
+    avatarValue = form.elements['user_avatar'].value;
+    formData.set('user_avatar', avatarValue);  // Use user-entered url if file not present
+  }
+  // If backend expects 'user_avatar' to be a file, remove value and only upload file.
+
   try {
     const res = await fetch('/issues', { method: 'POST', body: formData });
     if (!res.ok) throw new Error();
     alert('Issue reported successfully!');
-    issueForm.reset();
-    document.getElementById('audioPlayback').style.display = 'none';
-    document.getElementById('videoRecording').style.display = 'none';
+    form.reset();
     loadIssues();
-  } catch { alert('Error submitting form.'); }
+  } catch {
+    alert('Error submitting form.');
+  }
 };
-// --- Issue List Render (unchanged from your latest) ---
+
+// ---- Issues Rendering ----
 async function loadIssues() {
   const res = await fetch('/issues');
   const issues = await res.json();
-  const issuesList = document.getElementById('issuesList');
   if (!issues.length){
-    issuesList.innerHTML = '<p style="text-align:center;color:#555;">No issues reported yet.</p>';return;
+    issuesList.innerHTML = '<p style="text-align:center;color:#555;">No issues reported yet.</p>';
+    return;
   }
   issuesList.innerHTML = issues.map(issue => `
     <div class="card">
@@ -458,13 +348,13 @@ async function loadIssues() {
       </div>
       ${(issue.user_avatar || issue.user_name || issue.user_email) ? `
       <div class="user-info">
-        ${issue.user_avatar ? `<img src="${issue.user_avatar}" alt="user"/>` : ''}
-        <span class="userName">${issue.user_name || issue.user_email || "Anon User"}</span>
+        ${issue.user_avatar ? `<img class="user-avatar" src="${issue.user_avatar}" alt="user"/>` : ''}
+        <span class="userName">${issue.user_name || issue.user_email || "No Name"}</span>
       </div>
       ` : ''}
-      ${issue.photo_url ? `<img class="issue-photo" src="${issue.photo_url}" alt="Photo" />` : ''}
-      ${issue.audio_url ? `<audio controls src="${issue.audio_url}"></audio>` : ''}
-      ${issue.video_url ? `<video controls src="${issue.video_url}"></video>` : ''}
+      ${issue.photo_filename ? `<img class="issue-photo" src="/static/uploads/${issue.photo_filename}" alt="Photo" />` : ''}
+      ${issue.audio_filename ? `<audio controls src="/static/uploads/${issue.audio_filename}"></audio>` : ''}
+      ${issue.video_filename ? `<video controls src="/static/uploads/${issue.video_filename}"></video>` : ''}
       <div class="meta"><b>Updated:</b> ${new Date(issue.updated_at).toLocaleString()}</div>
     </div>
   `).join('');
